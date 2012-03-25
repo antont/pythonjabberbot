@@ -192,10 +192,12 @@ class JabberBot(object):
 
 ################################
 
-    def connect(self):
+    def connect(self, register = False):
         """Connects the bot to server or returns current connection,
         send inital presence stanza
         and registers handlers
+
+        Optionally tries to register the given account first (default off).
         """
         if not self.conn:
             # TODO improve debug
@@ -213,6 +215,16 @@ class JabberBot(object):
             if conres != 'tls':
                 self.log.warning('unable to establish secure connection '\
                 '- TLS failed!')
+
+            if register:
+                regres = xmpp.features.register(conn, 
+                                                self.jid.getDomain(), 
+                                                {'username': self.jid.getNode()
+                                                 , 'password': self.__password})
+                if not regres:
+                    self.log.info("registering %s failed." % str(self.jid))
+                else:
+                    self.log.info("registering %s succeeded." % str(self.jid))
 
             authres = conn.auth(self.jid.getNode(), self.__password, self.res)
             if not authres:
